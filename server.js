@@ -1,44 +1,38 @@
-// NPM Library 
-
 const express = require("express");
-const path = require("path");
-const handlebars = require('express-handlebars');
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//Server Set Uo
+//const path = require("path");
+const PORT = process.env.PORT || 3001;
+const mongoose = require("mongoose");
 const app = express();
+const config = require("./config/config");
+const routes = require("./server/routes");
 
-const PORT = process.env.PORT || 3000;
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-//staticly hosting our pages (html)
-app.use(express.static('public'));
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.use(routes);
 
-//Calling HTML Pages
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://localhost/Emp_DB", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
-//app.get("/", (req,res) => {
-//console.log("Page is here");
-//res.send('index')
-//})
+// Define API routes
 
-//For Handelbars
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "./client/build/index.html"));
+// });
 
-app.set('view engine', 'handlebars');
-
-app.engine('handlebars', handlebars({
-    layoutsDir: `${__dirname}/views/layouts`,
-}));
-
-app.get('/', (req, res) => {
-    console.log("Page is here");
-    res.render('main', { layout: 'index' });
-});
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//Having our website listen
 app.listen(PORT, () => {
-    console.log("Hello Detroit")
-})
+  console.log(
+    `🌎 ==> Express/Node.js API server now on http://localhost:${PORT}`
+  );
+});
